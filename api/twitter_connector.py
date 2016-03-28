@@ -9,7 +9,7 @@ import yaml
 import tweepy
 import json
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, \
-    BigInteger, ForeignKey, Table
+    BigInteger, Text, ForeignKey, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
@@ -66,9 +66,19 @@ class FileListener(tweepy.StreamListener):
         logger.error(status, exec_info=True)
 
 
-tweet_hashtags = Table('tweet_hashtags', Base.metadata,
+# tweets_hashtags = Table('tweets_hashtags', Base.metadata,
+#     Column('tweets_id', BigInteger, ForeignKey('tweets.id'), primary_key=True),
+#     Column('hashtags_id', BigInteger, ForeignKey('hashtags.id'), primary_key=True)
+# )
+
+tweets_urls = Table('tweets_urls', Base.metadata,
     Column('tweets_id', BigInteger, ForeignKey('tweets.id'), primary_key=True),
-    Column('hashtags_id', Integer, ForeignKey('hashtags.id'), primary_key=True)
+    Column('urls_id', BigInteger, ForeignKey('urls.id'), primary_key=True)
+)
+
+hashtags_urls = Table('hashtags_urls', Base.metadata,
+    Column('urls_id', BigInteger, ForeignKey('urls.id'), primary_key=True),
+    Column('hashtags_id', BigInteger, ForeignKey('hashtags.id'), primary_key=True)
 )
 
 
@@ -79,24 +89,60 @@ class Tweet(Base):
     created_at = Column(DateTime)
     timestamp_ms = Column(BigInteger)
     text = Column(String(255))
-    url = Column(String(255))
+    #url = Column(String(255))
     retweet_count = Column(Integer)
     favorite_count = Column(Integer)
-    hashtags = relationship('Hashtag', secondary=tweet_hashtags,
-                            back_populates='tweets')
+    # hashtags = relationship('Hashtag', secondary=tweets_hashtags,
+    #                         back_populates='tweets')
+    urls = relationship('Url', secondary=tweets_urls,
+                        back_populates='tweets')
+
+    def __repr__(self):
+        return "<Tweet(text='%s')>" % self.text
+        # return "<Tweet(created_at='%s', text='%s', retweet_count='%s, " \
+        #        "favorite_count='%s', urls='%s', timestamp_ms='%s')>" \
+        #        % (self.created_at, self.text, self.retweet_count,
+        #           self.favorite_count, self.urls, self.timestamp_ms)
 
 
 class Hashtag(Base):
     __tablename__ = 'hashtags'
 
-    id = Column(Integer, primary_key=True, unique=True)
+    id = Column(BigInteger, primary_key=True, unique=True)
     hashtag = Column(String(100), unique=True, primary_key=True)
     #tweet_id = Column(BigInteger, ForeignKey('tweets.id'), primary_key=True)
-    tweets = relationship('Tweet', secondary=tweet_hashtags,
-                          back_populates='hashtags')
+    # tweets = relationship('Tweet', secondary=tweets_hashtags,
+    #                       back_populates='hashtags')
+    urls = relationship('Url', secondary=hashtags_urls,
+                        back_populates='hashtags')
 
     def __init__(self, hashtag):
         self.hashtag = hashtag
+
+    def __repr__(self):
+        return "<Hashtag(hashtag='%s')>" % self.hashtag
+        # return "<Hashtag(hashtag='%s', urls='%s')>" % (
+            # self.hashtag, self.urls)
+
+
+class Url(Base):
+    __tablename__ = 'urls'
+
+    id = Column(BigInteger, primary_key=True, unique=True)
+    url = Column(Text, unique=True, primary_key=True)
+    tweets = relationship('Tweet', secondary=tweets_urls,
+                          back_populates='urls')
+    hashtags = relationship('Hashtag', secondary=hashtags_urls,
+                            back_populates='urls')
+
+    def __init__(self, url):
+        self.url = url
+
+    def __repr__(self):
+        return "<Url(url='%s')>" % self.url
+        # return "<Url(url='%s', tweets='%s', hashtags='%s')>" % (self.url,
+                                                               # self.tweets,
+                                                               # self.hashtags)
 
 
 class DBListener(tweepy.StreamListener):
@@ -127,32 +173,58 @@ class DBListener(tweepy.StreamListener):
             data[arg] = tweet[arg]
         return data
 
+    def get_urls(self, urls):
+        expanded_urls = []
+        for url in urls:
+            expanded_url = self.session.query(Url).filter_by(url=url[
+                'expanded_url']).first()
+            if expanded_url:
+                expanded_urls.append(expanded_url)
+            else:
+                expanded_urls.append(Url(url['expanded_url']))
+        return expanded_urls
+
     def get_hashtags(self, entities):
         hashtags =[]
         for hashtag in entities['hashtags']:
+            _tag = hashtag['text'].lower()
             tag = self.session.query(Hashtag).filter_by(
-                    hashtag=hashtag['text']).first()
+                    hashtag=_tag).first()
             if tag:
+                # tag.urls.append(urls)
                 hashtags.append(tag)
             else:
-                hashtags.append(Hashtag(hashtag['text']))
+                new_tag = Hashtag(_tag)
+                # new_tag.urls = urls
+                hashtags.append(new_tag)
         return hashtags
 
+    def add_hashtags(self, hashtags, urls):
+        for url in urls:
+            for hashtag in hashtags:
+                url.hashtags.append(hashtag)
+        return urls
 
     def on_data(self, raw_data):
         json_tweet = json.loads(raw_data)
         data = self.parse_tweet(json_tweet, *self.filter)
-        urls = data['entities']['urls']
+        entities = data['entities']
+        urls = self.get_urls(entities['urls'])
         if urls:
+            print('************ URLS **********: ', urls)
+            hashtags = self.get_hashtags(entities)
+            urls = self.add_hashtags(hashtags, urls)
             tweet = Tweet(id = data['id'], created_at = data['created_at'],
                           timestamp_ms = data['timestamp_ms'], text = data[
-                'text'], url = urls[0]['expanded_url'], retweet_count = data[
-                    'retweet_count'], favorite_count = data['favorite_count'])
-            hashtags = self.get_hashtags(data['entities'])
-            print('hashtags: ', hashtags)
-            tweet.hashtags = hashtags
+                'text'], urls = urls, retweet_count = data['retweet_count'],
+                          favorite_count = data['favorite_count']) #, hashtags =
+                          # hashtags)
+            #tweet.hashtags = hashtags
+
             logger.info('Saving Tweet: %s' % tweet.text)
             self.session.add(tweet)
+            self.session.add_all(hashtags)
+            self.session.add_all(urls)
             self.session.commit()
         return True
 
@@ -195,7 +267,10 @@ def main():
                          'python code', 'python coding', 'python API',
                          'python data', 'python machine', 'python hack',
                          'python script', 'python keynote', 'python server',
-                         'python application'])
+                         'python application', 'python django', 'python web',
+                             'django programming', 'django web', 'django app',
+                             'django tutorial', 'python flask', 'flask app',
+                             'flask tutorial', 'flask web', 'scipy', 'numpy'])
     except AttributeError:
         logger.error('Error!', exc_info=True)
         main()
