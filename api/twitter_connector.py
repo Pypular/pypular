@@ -8,6 +8,9 @@ import logging
 import yaml
 import tweepy
 import json
+from datetime import datetime
+
+import requests
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, \
     BigInteger, Text, ForeignKey, Table
 from sqlalchemy.ext.declarative import declarative_base
@@ -29,6 +32,20 @@ def load_config(config_file):
     else:
         logger.info('Configuration file loaded')
         return config
+
+
+def get_expanded_url(url, max_retries=3):
+    # todo: add error handling
+    for retry in range(max_retries):
+        try:
+            req = requests.head(url, allow_redirects=True, timeout=10)
+        except:
+            logger.error('Unable to connect to url: %s', url)
+            logger.info('Retrying the connection. Attempt %s out of %s' % (
+                retry + 1, max_retries))
+        else:
+            return req.url
+    return url
 
 
 class StdOutListener(tweepy.StreamListener):
@@ -130,6 +147,9 @@ class Url(Base):
 
     id = Column(BigInteger, primary_key=True, unique=True)
     url = Column(Text, unique=True, primary_key=True)
+    expanded_url = Column(Text, unique=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    modified_at = Column(DateTime, default=datetime.utcnow)
     tweets = relationship('Tweet', secondary=tweets_urls,
                           back_populates='urls')
     hashtags = relationship('Hashtag', secondary=hashtags_urls,
@@ -156,7 +176,7 @@ class DBListener(tweepy.StreamListener):
 
     def setup_db(self):
         logger.info('Opening connection with DB %s' % self.db_name)
-        engine = create_engine('postgresql://dra@:5432/pypular',
+        engine = create_engine('postgresql://dra@:5432/' + self.db_name,
                                echo=True)
         Base.metadata.create_all(engine)
         Session = sessionmaker(bind=engine)
@@ -173,36 +193,68 @@ class DBListener(tweepy.StreamListener):
             data[arg] = tweet[arg]
         return data
 
+    def get_tweets(self, data, urls):
+        tweet = self.session.query(Tweet).filter_by(id = data['id']).first()
+        if tweet:
+            _urls = [url.expanded_url for url in tweet.urls]
+            for url in urls:
+                if url.expanded_url not in _urls:
+                    tweet.urls.append(url)
+        else:
+            tweet = Tweet(id=data['id'], created_at=data['created_at'],
+                      timestamp_ms=data['timestamp_ms'], text=data[
+            'text'], urls=urls, retweet_count=data['retweet_count'],
+                      favorite_count=data['favorite_count'])
+        return tweet
+
     def get_urls(self, urls):
         expanded_urls = []
+        urls_lst = []
         for url in urls:
-            expanded_url = self.session.query(Url).filter_by(url=url[
-                'expanded_url']).first()
-            if expanded_url:
-                expanded_urls.append(expanded_url)
-            else:
-                expanded_urls.append(Url(url['expanded_url']))
+            exp_url = get_expanded_url(url['expanded_url'])
+            if exp_url not in urls_lst:
+                urls_lst.append(exp_url)
+                expanded_url = self.session.query(Url).filter_by(
+                    expanded_url=exp_url).first()
+                if expanded_url:
+                    expanded_url.modified_at = datetime.utcnow()
+                    expanded_urls.append(expanded_url)
+                else:
+                    _url = self.session.query(Url).filter_by(
+                        url=url['expanded_url']).first()
+                    if not _url:
+                        new_url = Url(url['expanded_url'])
+                        new_url.expanded_url = exp_url
+                        expanded_urls.append(new_url)
+                    else:
+                        logger.warn('Found matching url but different '
+                                    'expanded_url. Skipping...')
         return expanded_urls
 
     def get_hashtags(self, entities):
-        hashtags =[]
+        hashtags = []
+        _hashtags = []
         for hashtag in entities['hashtags']:
             _tag = hashtag['text'].lower()
-            tag = self.session.query(Hashtag).filter_by(
-                    hashtag=_tag).first()
-            if tag:
-                # tag.urls.append(urls)
-                hashtags.append(tag)
-            else:
-                new_tag = Hashtag(_tag)
-                # new_tag.urls = urls
-                hashtags.append(new_tag)
+            if _tag not in _hashtags:
+                _hashtags.append(_tag)
+                tag = self.session.query(Hashtag).filter_by(
+                        hashtag=_tag).first()
+                if tag:
+                    # tag.urls.append(urls)
+                    hashtags.append(tag)
+                else:
+                    new_tag = Hashtag(_tag)
+                    # new_tag.urls = urls
+                    hashtags.append(new_tag)
         return hashtags
 
     def add_hashtags(self, hashtags, urls):
         for url in urls:
+            tags = url.hashtags
             for hashtag in hashtags:
-                url.hashtags.append(hashtag)
+                if hashtag not in tags:
+                    url.hashtags.append(hashtag)
         return urls
 
     def on_data(self, raw_data):
@@ -214,13 +266,7 @@ class DBListener(tweepy.StreamListener):
             print('************ URLS **********: ', urls)
             hashtags = self.get_hashtags(entities)
             urls = self.add_hashtags(hashtags, urls)
-            tweet = Tweet(id = data['id'], created_at = data['created_at'],
-                          timestamp_ms = data['timestamp_ms'], text = data[
-                'text'], urls = urls, retweet_count = data['retweet_count'],
-                          favorite_count = data['favorite_count']) #, hashtags =
-                          # hashtags)
-            #tweet.hashtags = hashtags
-
+            tweet = self.get_tweets(data, urls)
             logger.info('Saving Tweet: %s' % tweet.text)
             self.session.add(tweet)
             self.session.add_all(hashtags)
@@ -257,7 +303,7 @@ def main():
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
     # listener = StdOutListener()
-    listener = DBListener('tweets.json')
+    listener = DBListener('pypular')
     stream = tweepy.Stream(auth, listener, retry_count=50)
     logger.info('Initializing Twitter Streaming Listener...')
 
