@@ -190,7 +190,16 @@ class DBListener(tweepy.StreamListener):
     def parse_tweet(self, tweet, *args):
         data = {}
         for arg in args:
-            data[arg] = tweet[arg]
+            try:
+                data[arg] = tweet[arg]
+            except KeyError:
+                logger.error('No %s found on tweet' % arg)
+                if arg == 'created_at':
+                    data[arg] = datetime.utcnow()
+                    logger.info('Using current datetime %s.' % data[arg])
+                else:
+                    logger.error('Exiting so we can catch and fix the error')
+                    exit(1)
         return data
 
     def get_tweets(self, data, urls):
@@ -258,7 +267,10 @@ class DBListener(tweepy.StreamListener):
         return urls
 
     def on_data(self, raw_data):
-        json_tweet = json.loads(raw_data)
+        try:
+            json_tweet = json.loads(raw_data)
+        except TypeError:
+            return True
         data = self.parse_tweet(json_tweet, *self.filter)
         entities = data['entities']
         urls = self.get_urls(entities['urls'])
