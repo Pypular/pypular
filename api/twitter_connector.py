@@ -88,12 +88,14 @@ class FileListener(tweepy.StreamListener):
 #     Column('hashtags_id', BigInteger, ForeignKey('hashtags.id'), primary_key=True)
 # )
 
-tweets_urls = Table('tweets_urls', Base.metadata,
+tweets_urls = Table(
+    'tweets_urls', Base.metadata,
     Column('tweets_id', BigInteger, ForeignKey('tweets.id'), primary_key=True),
     Column('urls_id', BigInteger, ForeignKey('urls.id'), primary_key=True)
 )
 
-hashtags_urls = Table('hashtags_urls', Base.metadata,
+hashtags_urls = Table(
+    'hashtags_urls', Base.metadata,
     Column('urls_id', BigInteger, ForeignKey('urls.id'), primary_key=True),
     Column('hashtags_id', BigInteger, ForeignKey('hashtags.id'), primary_key=True)
 )
@@ -106,7 +108,7 @@ class Tweet(Base):
     created_at = Column(DateTime)
     timestamp_ms = Column(BigInteger)
     text = Column(String(255))
-    #url = Column(String(255))
+    # url = Column(String(255))
     retweet_count = Column(Integer)
     favorite_count = Column(Integer)
     # hashtags = relationship('Hashtag', secondary=tweets_hashtags,
@@ -127,7 +129,7 @@ class Hashtag(Base):
 
     id = Column(BigInteger, primary_key=True, unique=True)
     hashtag = Column(String(100), unique=True, primary_key=True)
-    #tweet_id = Column(BigInteger, ForeignKey('tweets.id'), primary_key=True)
+    # tweet_id = Column(BigInteger, ForeignKey('tweets.id'), primary_key=True)
     # tweets = relationship('Tweet', secondary=tweets_hashtags,
     #                       back_populates='hashtags')
     urls = relationship('Url', secondary=hashtags_urls,
@@ -138,8 +140,6 @@ class Hashtag(Base):
 
     def __repr__(self):
         return "<Hashtag(hashtag='%s')>" % self.hashtag
-        # return "<Hashtag(hashtag='%s', urls='%s')>" % (
-            # self.hashtag, self.urls)
 
 
 class Url(Base):
@@ -160,9 +160,6 @@ class Url(Base):
 
     def __repr__(self):
         return "<Url(url='%s')>" % self.url
-        # return "<Url(url='%s', tweets='%s', hashtags='%s')>" % (self.url,
-                                                               # self.tweets,
-                                                               # self.hashtags)
 
 
 class DBListener(tweepy.StreamListener):
@@ -170,13 +167,13 @@ class DBListener(tweepy.StreamListener):
     def __init__(self, db_name):
         super().__init__()
         self.filter = ['created_at', 'entities', 'favorite_count', 'id',
-              'retweet_count', 'text', 'timestamp_ms']
+                       'retweet_count', 'text', 'timestamp_ms']
         self.db_name = db_name
         self.session = self.setup_db()
 
     def setup_db(self):
         logger.info('Opening connection with DB %s' % self.db_name)
-        engine = create_engine('postgresql://dra@:5432/' + self.db_name,
+        engine = create_engine('postgresql://:5432/' + self.db_name,
                                echo=True)
         Base.metadata.create_all(engine)
         Session = sessionmaker(bind=engine)
@@ -204,17 +201,18 @@ class DBListener(tweepy.StreamListener):
         return data
 
     def get_tweets(self, data, urls):
-        tweet = self.session.query(Tweet).filter_by(id = data['id']).first()
+        tweet = self.session.query(Tweet).filter_by(id=data['id']).first()
         if tweet:
             _urls = [url.expanded_url for url in tweet.urls]
             for url in urls:
                 if url.expanded_url not in _urls:
                     tweet.urls.append(url)
         else:
-            tweet = Tweet(id=data['id'], created_at=data['created_at'],
-                      timestamp_ms=data['timestamp_ms'], text=data[
-            'text'], urls=urls, retweet_count=data['retweet_count'],
-                      favorite_count=data['favorite_count'])
+            tweet = Tweet(
+                id=data['id'], created_at=data['created_at'], timestamp_ms=data['timestamp_ms'],
+                text=data['text'], urls=urls, retweet_count=data['retweet_count'],
+                favorite_count=data['favorite_count']
+            )
         return tweet
 
     def get_urls(self, urls):
@@ -248,8 +246,7 @@ class DBListener(tweepy.StreamListener):
             _tag = hashtag['text'].lower()
             if _tag not in _hashtags:
                 _hashtags.append(_tag)
-                tag = self.session.query(Hashtag).filter_by(
-                        hashtag=_tag).first()
+                tag = self.session.query(Hashtag).filter_by(hashtag=_tag).first()
                 if tag:
                     # tag.urls.append(urls)
                     hashtags.append(tag)
@@ -289,7 +286,7 @@ class DBListener(tweepy.StreamListener):
         return True
 
     def on_error(self, status):
-        logger.error(status, exec_info=True)
+        logger.error(status)
 
 
 def setup_logging():
@@ -322,15 +319,16 @@ def main():
     logger.info('Initializing Twitter Streaming Listener...')
 
     try:
-
-        stream.filter(track=['python programming', 'python tutorial', 'python language',
-                         'python code', 'python coding', 'python API',
-                         'python data', 'python machine', 'python hack',
-                         'python script', 'python keynote', 'python server',
-                         'python application', 'python django', 'python web',
-                             'django programming', 'django web', 'django app',
-                             'django tutorial', 'python flask', 'flask app',
-                             'flask tutorial', 'flask web', 'scipy', 'numpy'])
+        stream.filter(track=[
+            'python programming', 'python tutorial', 'python language',
+            'python code', 'python coding', 'python API',
+            'python data', 'python machine', 'python hack',
+            'python script', 'python keynote', 'python server',
+            'python application', 'python django', 'python web',
+            'django programming', 'django web', 'django app',
+            'django tutorial', 'python flask', 'flask app',
+            'flask tutorial', 'flask web', 'scipy', 'numpy'
+        ])
     except AttributeError:
         logger.error('Error!', exc_info=True)
         main()
