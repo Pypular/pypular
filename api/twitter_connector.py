@@ -5,33 +5,21 @@ tweepy module.
 """
 
 import logging
-import yaml
 import tweepy
 import json
+import requests
+
 from datetime import datetime
 
-import requests
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, \
-    BigInteger, Text, ForeignKey, Table
+from sqlalchemy import (
+    create_engine, Column, Integer, String, DateTime, BigInteger, Text, ForeignKey, Table
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
-# from pudb import set_trace; set_trace()
+from decouple import config
 
 logger = logging.getLogger(__name__)
 Base = declarative_base()
-
-
-def load_config(config_file):
-
-    logger.info('Loading configuration file')
-    try:
-        with open(config_file, 'r') as config_file:
-            config = yaml.load(config_file)
-    except IOError:
-        logger.error('Unable to load the config file', exc_info=True)
-    else:
-        logger.info('Configuration file loaded')
-        return config
 
 
 def get_expanded_url(url, max_retries=3):
@@ -176,8 +164,7 @@ class DBListener(tweepy.StreamListener):
 
     def setup_db(self):
         logger.info('Opening connection with DB %s' % self.db_name)
-        engine = create_engine('postgresql://dra@:5432/' + self.db_name,
-                               echo=True)
+        engine = create_engine(config('DATABASE'), echo=True)
         Base.metadata.create_all(engine)
         Session = sessionmaker(bind=engine)
 
@@ -306,13 +293,11 @@ def main():
     setup_logging()
 
     # TODO: Add exception handling
-    config = load_config('conf/api.yaml')
-    twitter_conf = config['twitter']
 
-    CONSUMER_KEY = twitter_conf['CONSUMER_KEY']
-    CONSUMER_SECRET = twitter_conf['CONSUMER_SECRET']
-    ACCESS_TOKEN = twitter_conf['ACCESS_TOKEN']
-    ACCESS_TOKEN_SECRET = twitter_conf['ACCESS_TOKEN_SECRET']
+    CONSUMER_KEY = config('TWITTER_CONSUMER_KEY')
+    CONSUMER_SECRET = config('TWITTER_CONSUMER_SECRET')
+    ACCESS_TOKEN = config('TWITTER_ACCESS_TOKEN')
+    ACCESS_TOKEN_SECRET = config('TWITTER_ACCESS_TOKEN_SECRET')
 
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
@@ -330,7 +315,7 @@ def main():
                          'python application', 'python django', 'python web',
                              'django programming', 'django web', 'django app',
                              'django tutorial', 'python flask', 'flask app',
-                             'flask tutorial', 'flask web', 'scipy', 'numpy'])
+                             'flask tutorial', 'flask web', 'scipy', 'numpy', 'futebol'])
     except AttributeError:
         logger.error('Error!', exc_info=True)
         main()
