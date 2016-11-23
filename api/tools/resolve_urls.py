@@ -25,6 +25,7 @@ def setup_db(db_name):
 
     return Session()
 
+
 def setup_logging():
     logging.basicConfig(level=logging.INFO)
     handler = logging.FileHandler('resolve_urls.log')
@@ -33,12 +34,15 @@ def setup_logging():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
+
 def get_urls(session):
     urls = session.query(Url).all()
     return urls
 
+
 def get_url(session, url):
     return session.query(Url).filter_by(expanded_url=url).first()
+
 
 def update_url(session, url, expanded_url):
     original_url = get_url(session, expanded_url)
@@ -70,6 +74,7 @@ def update_url(session, url, expanded_url):
             url.modified_at = datetime.utcnow()
     session.commit()
 
+
 def main():
     setup_logging()
     session = setup_db('pypular')
@@ -83,7 +88,7 @@ def main():
             logger.info('Match: %s and %s' % (url.expanded_url, expanded_url))
             short_url = get_url(session, expanded_url)
             if url.id != short_url.id:
-                logger,warn('IDs mismatch: %s and %s' % (url.id, short_url.id))
+                logger.warn('IDs mismatch: %s and %s', url.id, short_url.id)
                 update_url(session, url, expanded_url)
 
 
