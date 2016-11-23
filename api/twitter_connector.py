@@ -15,7 +15,7 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, \
     BigInteger, Text, ForeignKey, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
-
+# from pudb import set_trace; set_trace()
 
 logger = logging.getLogger(__name__)
 Base = declarative_base()
@@ -198,7 +198,8 @@ class DBListener(tweepy.StreamListener):
                     data[arg] = datetime.utcnow()
                     logger.info('Using current datetime %s.' % data[arg])
                 else:
-                    logger.error('Exiting so we can catch and fix the error')
+                    logger.error('Exiting so we can catch and fix the error',
+                                 exec_info=True)
                     exit(1)
         return data
 
@@ -270,6 +271,7 @@ class DBListener(tweepy.StreamListener):
         try:
             json_tweet = json.loads(raw_data)
         except TypeError:
+            logger.error('Error reading tweet:', exc_info=True)
             return True
         data = self.parse_tweet(json_tweet, *self.filter)
         entities = data['entities']
