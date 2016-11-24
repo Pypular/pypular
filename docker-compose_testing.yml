@@ -1,0 +1,29 @@
+version: '2'
+
+networks:
+  testing: {}
+
+services:
+
+  test_app:
+    restart: always
+    build: .
+    links:
+      - postgres:postgres
+    env_file: .env
+    command: python -m twitter_connector
+
+  test_postgres:
+    build: ./ops/dev/postgres
+    restart: always
+    volumes_from:
+      - data
+    ports:
+      - "5435:5435"
+    networks: [testing]
+
+  data:
+    image: postgres:latest
+    volumes:
+      - /var/lib/postgresql
+    command: "true"
