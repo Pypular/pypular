@@ -12,7 +12,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 print('sys.path: ', sys.path)
-from api.twitter_connector import Url, get_expanded_url
+from twitter_connector.models import Url
+from twitter_connector.utils import get_expanded_url
 
 logger = logging.getLogger(__name__)
 

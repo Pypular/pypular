@@ -40,6 +40,5 @@ cp api/conf/api.yaml.template api/conf/api.yaml
 ## Running
 
 ```
-cd api
-python twitter_connector.py
+python -m twitter_connector
 ```
