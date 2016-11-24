@@ -7,7 +7,7 @@ fields for each tweet.
 import logging
 
 
-from api.twitter_connector import DBListener
+from twitter_connector.__main__ import DBListener
 
 logger = logging.getLogger(__name__)
 # Base = declarative_base()
