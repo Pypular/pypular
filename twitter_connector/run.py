@@ -1,6 +1,6 @@
-from decouple import config
 import tweepy
 
+from decouple import config
 from twitter_connector.listeners import DBListener
 
 

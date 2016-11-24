@@ -1,11 +1,11 @@
-from sqlalchemy import (create_engine, Column, Integer, String, DateTime,
-                        BigInteger, Text, ForeignKey, Table)
+import logging
+
+from datetime import datetime
+from sqlalchemy import (
+    create_engine, Column, Integer, String, DateTime, BigInteger, Text, ForeignKey, Table
+)
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
-
-import logging
-from datetime import datetime
-
 
 logger = logging.getLogger(__name__)
 Base = declarative_base()

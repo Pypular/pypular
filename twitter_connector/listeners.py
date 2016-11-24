@@ -1,12 +1,10 @@
 import tweepy
-
-import twitter_connector.models as db
-from twitter_connector.utils import get_expanded_url
-
 import json
 import logging
-from datetime import datetime
+import twitter_connector.models as db
 
+from datetime import datetime
+from twitter_connector.utils import get_expanded_url
 
 logger = logging.getLogger(__name__)
 
@@ -29,12 +27,7 @@ class FileListener(tweepy.StreamListener):
         logger.info('Opening file %s' % self.file_name)
         self.file = open(self.file_name, 'w')
 
-    # def __enter__(self):
-    #     logger.info('Opening file %s' % self.file_name)
-    #     self.file = open(self.file_name, 'wb')
-    #     return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self):
         self.file.close()
         logger.info('Closing file %s' % self.file_name)
 
