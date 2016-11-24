@@ -5,3 +5,4 @@ ACCESS_TOKEN_SECRET=<your access token secret>
 DATABASE=postgresql://user:pass@localhost:5432/database
 DEBUG=True
 SECRET_KEY=SECRET
+ALLOWED_HOSTS=127.0.0.1, .localhost

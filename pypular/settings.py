@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'pypular.wsgi.application'
 default_dburl = 'sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')
 
 DATABASES = {
-    'default' : config('DATABASE_URL', default=default_dburl, cast=dburl),
+    'default': config('DATABASE_URL', default=default_dburl, cast=dburl),
 }
 
 
@@ -121,3 +121,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+
+CONSUMER_KEY = config('TWITTER_CONSUMER_KEY')
+CONSUMER_SECRET = config('TWITTER_CONSUMER_SECRET')
+ACCESS_TOKEN = config('TWITTER_ACCESS_TOKEN')
+ACCESS_TOKEN_SECRET = config('TWITTER_ACCESS_TOKEN_SECRET')

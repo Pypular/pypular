@@ -1,15 +1,12 @@
 import tweepy
+from pypular.settings import (
+    CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN_SECRET, ACCESS_TOKEN
+)
 
-from decouple import config
 from twitter_connector.listeners import DBListener
 
 
 def twitter_stream(logger):
-    CONSUMER_KEY = config('TWITTER_CONSUMER_KEY')
-    CONSUMER_SECRET = config('TWITTER_CONSUMER_SECRET')
-    ACCESS_TOKEN = config('TWITTER_ACCESS_TOKEN')
-    ACCESS_TOKEN_SECRET = config('TWITTER_ACCESS_TOKEN_SECRET')
-
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
     listener = DBListener('pypular')
