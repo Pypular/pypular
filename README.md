@@ -2,18 +2,18 @@
 
 ## Summary
 
-- [Como desenvolver](#como-desenvolver)
-- [Configurando Banco de dados](#configurando-banco-de-dados)
+- [How to Development](#how-to-development)
+- [Setting up Database](#setting-up-database)
 
 ## How to Development?
 
-1. clone o respositório.
-2. crie um virtualenv com Python 3.5.
-3. Ative o virtualenv.
-4. Instale as dependências.
-5. Copie o arquivo de configuração
+1. clone repository.
+2. create a virtualenv.
+3. Active virtualenv.
+4. Install dependencies.
+5. Copy the configuration file.
   
-> git clone git@github.com:lffsantos/pypular.git pypular  
+> git clone git@github.com:denisra/pypular.git pypular  
 > cd pypular  
 > python3 -m venv .virtualenv  
 > source .virtualenv/bin/activate  
