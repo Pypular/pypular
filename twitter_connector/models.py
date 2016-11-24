@@ -1,19 +1,29 @@
 import logging
 
 from datetime import datetime
+from decouple import config
 from sqlalchemy import (
     create_engine, Column, Integer, String, DateTime, BigInteger, Text, ForeignKey, Table
 )
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import  relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+
 
 logger = logging.getLogger(__name__)
 Base = declarative_base()
 
 
-def setup_db(db_name):
-    logger.info('Opening connection with DB %s' % db_name)
-    engine = create_engine('postgresql://:5432/' + db_name, echo=True)
+# def setup_db(db_name):
+#     logger.info('Opening connection with DB %s' % db_name)
+#     engine = create_engine('postgresql://:5432/' + db_name, echo=True)
+#     Base.metadata.create_all(engine)
+#     session = sessionmaker(bind=engine)
+#     return session()
+
+
+def setup_db():
+    logger.info('Opening connection with DB')
+    engine = create_engine(config('DATABASE'), echo=True)
     Base.metadata.create_all(engine)
     session = sessionmaker(bind=engine)
     return session()

@@ -46,9 +46,9 @@ class DBListener(tweepy.StreamListener):
         self.filter = ['created_at', 'entities', 'favorite_count', 'id',
                        'retweet_count', 'text', 'timestamp_ms']
         self.db_name = db_name
-        self.session = db.setup_db(self.db_name)
+        self.session = db.setup_db()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self):
         self.session.close()
         logger.info('Closing connection with DB %s' % self.db_name)
 

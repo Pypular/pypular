@@ -7,7 +7,7 @@ tweepy module.
 import os
 import logging
 
-from twitter_connector.utils import setup_logging
+from twitter_connector import setup_logging
 from twitter_connector.run import twitter_stream
 
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 if __name__ == '__main__':
-    setup_logging()
+    setup_logging('twitter_connector.log')
     try:
         twitter_stream(logger)
     except KeyboardInterrupt:
