@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'twitter_connector',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -79,7 +80,7 @@ WSGI_APPLICATION = 'pypular.wsgi.application'
 default_dburl = 'sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')
 
 DATABASES = {
-    'default': config('DATABASE_URL', default=default_dburl, cast=dburl),
+    'default': config('DATABASE', default=default_dburl, cast=dburl),
 }
 
 

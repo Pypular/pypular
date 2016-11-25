@@ -1,107 +1,88 @@
-import logging
-
 from datetime import datetime
-from decouple import config
-from sqlalchemy import (
-    create_engine, Column, Integer, String, DateTime, BigInteger, Text, ForeignKey, Table
-)
-from sqlalchemy.orm import  relationship, sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from django.db import models
 
 
-logger = logging.getLogger(__name__)
-Base = declarative_base()
+class Tweet(models.Model):
 
+    id = models.BigIntegerField(primary_key=True, unique=True)
+    created_at = models.DateTimeField('created_at')
+    timestamp_ms = models.BigIntegerField('timestamp_ms')
+    text = models.CharField('text', max_length=150)
+    retweet_count = models.IntegerField('retweet_count')
+    favorite_count = models.IntegerField('favorite_count')
+    # urls = models.ManyToManyField('Url', verbose_name='urls', blank=False)
 
-# def setup_db(db_name):
-#     logger.info('Opening connection with DB %s' % db_name)
-#     engine = create_engine('postgresql://:5432/' + db_name, echo=True)
-#     Base.metadata.create_all(engine)
-#     session = sessionmaker(bind=engine)
-#     return session()
+    class Meta:
+        db_table = 'tweet'
+        verbose_name = 'tweet'
+        verbose_name_plural = 'tweets'
 
-
-def setup_db():
-    logger.info('Opening connection with DB')
-    engine = create_engine(config('DATABASE'), echo=True)
-    Base.metadata.create_all(engine)
-    session = sessionmaker(bind=engine)
-    return session()
-
-# tweets_hashtags = Table('tweets_hashtags', Base.metadata,
-#     Column('tweets_id', BigInteger, ForeignKey('tweets.id'), primary_key=True),
-#     Column('hashtags_id', BigInteger, ForeignKey('hashtags.id'), primary_key=True)
-# )
-
-tweets_urls = Table(
-    'tweets_urls', Base.metadata,
-    Column('tweets_id', BigInteger, ForeignKey('tweets.id'), primary_key=True),
-    Column('urls_id', BigInteger, ForeignKey('urls.id'), primary_key=True)
-)
-
-hashtags_urls = Table(
-    'hashtags_urls', Base.metadata,
-    Column('urls_id', BigInteger, ForeignKey('urls.id'), primary_key=True),
-    Column('hashtags_id', BigInteger, ForeignKey('hashtags.id'), primary_key=True)
-)
-
-
-class Tweet(Base):
-    __tablename__ = 'tweets'
-
-    id = Column(BigInteger, primary_key=True, unique=True)
-    created_at = Column(DateTime)
-    timestamp_ms = Column(BigInteger)
-    text = Column(String(255))
-    # url = Column(String(255))
-    retweet_count = Column(Integer)
-    favorite_count = Column(Integer)
-    # hashtags = relationship('Hashtag', secondary=tweets_hashtags,
-    #                         back_populates='tweets')
-    urls = relationship('Url', secondary=tweets_urls,
-                        back_populates='tweets')
+    def __str__(self):
+        return self.text[:20] + '...'
 
     def __repr__(self):
         return "<Tweet(text='%s')>" % self.text
-        # return "<Tweet(created_at='%s', text='%s', retweet_count='%s, " \
-        #        "favorite_count='%s', urls='%s', timestamp_ms='%s')>" \
-        #        % (self.created_at, self.text, self.retweet_count,
-        #           self.favorite_count, self.urls, self.timestamp_ms)
 
 
-class Hashtag(Base):
-    __tablename__ = 'hashtags'
+class Hashtag(models.Model):
 
-    id = Column(BigInteger, primary_key=True, unique=True)
-    hashtag = Column(String(100), unique=True, primary_key=True)
-    # tweet_id = Column(BigInteger, ForeignKey('tweets.id'), primary_key=True)
-    # tweets = relationship('Tweet', secondary=tweets_hashtags,
-    #                       back_populates='hashtags')
-    urls = relationship('Url', secondary=hashtags_urls,
-                        back_populates='hashtags')
+    id = models.BigIntegerField(primary_key=True, unique=True)
+    hashtag = models.CharField('hashtag', max_length=100, unique=True)
+    # urls = models.ManyToManyField('Url', verbose_name='urls', blank=False)
 
-    def __init__(self, hashtag):
-        self.hashtag = hashtag
+    class Meta:
+        db_table = 'hashtag'
+        verbose_name = 'hashtag'
+        verbose_name_plural = 'hashtags'
+        unique_together = (('id', 'hashtag'),)
+
+    def __str__(self):
+        return self.hashtag
 
     def __repr__(self):
         return "<Hashtag(hashtag='%s')>" % self.hashtag
 
 
-class Url(Base):
-    __tablename__ = 'urls'
+class Url(models.Model):
 
-    id = Column(BigInteger, primary_key=True, unique=True)
-    url = Column(Text, unique=True, primary_key=True)
-    expanded_url = Column(Text, unique=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    modified_at = Column(DateTime, default=datetime.utcnow)
-    tweets = relationship('Tweet', secondary=tweets_urls,
-                          back_populates='urls')
-    hashtags = relationship('Hashtag', secondary=hashtags_urls,
-                            back_populates='urls')
+    id = models.BigIntegerField(primary_key=True, unique=True)
+    url = models.TextField('url', unique=True, null=False)
+    expanded_url = models.TextField('expanded_url')
+    created_at = models.DateTimeField('created_at', default=datetime.utcnow)
+    modified_at = models.DateTimeField('modified_at', default=datetime.utcnow)
 
-    def __init__(self, url):
-        self.url = url
+    class Meta:
+        db_table = 'url'
+        verbose_name = 'url'
+        verbose_name_plural = 'urls'
+        unique_together = (('id', 'expanded_url'),)
+
+    def __str__(self):
+        return self.url
 
     def __repr__(self):
         return "<Url(url='%s')>" % self.url
+
+
+class HashtagUrl(models.Model):
+
+    url = models.ForeignKey('Url')
+    hashtag = models.ForeignKey('Hashtag')
+
+    class Meta:
+        db_table = 'hashtag_url'
+        verbose_name = 'hashtagurl'
+        verbose_name_plural = 'hashtagurls'
+        unique_together = (('url', 'hashtag'),)
+
+
+class TweetUrl(models.Model):
+
+    tweet = models.ForeignKey('Tweet')
+    url = models.ForeignKey('Url')
+
+    class Meta:
+        db_table = 'tweet_url'
+        verbose_name = 'tweeturl'
+        verbose_name_plural = 'tweeturls'
+        unique_together = (('tweet', 'url'),)
