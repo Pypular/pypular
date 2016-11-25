@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 Base = declarative_base()
 
 
-def setup_db(db_name):
-    logger.info('Opening connection with DB %s' % db_name)
-    engine = create_engine('postgresql://:5432/' + db_name, echo=True)
+def setup_db(database_url):
+    logger.info('Opening connection with DB')
+    engine = create_engine(database_url, echo=True)
     Base.metadata.create_all(engine)
     session = sessionmaker(bind=engine)
     return session()

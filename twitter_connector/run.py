@@ -12,7 +12,7 @@ def twitter_stream(logger):
 
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
-    listener = DBListener('pypular')
+    listener = DBListener(settings.DATABASE_URL)
     stream = tweepy.Stream(auth, listener, retry_count=50)
     logger.info('Initializing Twitter Streaming Listener...')
     stream.filter(track=[

@@ -11,3 +11,6 @@ TWITTER_CONFIG = {
     'ACCESS_TOKEN': get_config('TW_ACCESS_TOKEN', ''),
     'ACCESS_TOKEN_SECRET': get_config('TW_ACCESS_TOKEN_SECRET', ''),
 }
+
+
+DATABASE_URL = get_config('DATABASE_URL', 'postgres://@:5432/pypular')
