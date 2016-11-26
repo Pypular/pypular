@@ -1,5 +1,4 @@
 import logging
-import yaml
 import requests
 
 
@@ -27,15 +26,3 @@ def get_expanded_url(url, max_retries=3):
         else:
             return req.url or 'invalid_url'  # TODO: need some verification
     return url
-
-
-def load_config(config_file):
-    logger.info('Loading configuration file')
-    try:
-        with open(config_file, 'r') as config_file:
-            config = yaml.load(config_file)
-    except IOError:
-        logger.error('Unable to load the config file', exc_info=True)
-    else:
-        logger.info('Configuration file loaded')
-        return config

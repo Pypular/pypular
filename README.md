@@ -34,11 +34,11 @@ Access Twitter App Management and [create a new app](https://apps.twitter.com/ap
 Copy and change with your own credentials
 
 ```
-cp api/conf/api.yaml.template api/conf/api.yaml
+cp env.template .env
 ```
 
 ## Running
 
 ```
-python -m twitter_connector
+honcho run python -m twitter_connector
 ```
