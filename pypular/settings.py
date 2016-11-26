@@ -83,8 +83,6 @@ DATABASES = {
     'default': config('DATABASE', default=default_dburl, cast=dburl),
 }
 
-
-
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 
@@ -123,7 +121,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-CONSUMER_KEY = config('TWITTER_CONSUMER_KEY')
-CONSUMER_SECRET = config('TWITTER_CONSUMER_SECRET')
-ACCESS_TOKEN = config('TWITTER_ACCESS_TOKEN')
-ACCESS_TOKEN_SECRET = config('TWITTER_ACCESS_TOKEN_SECRET')
+TWITTER_CONFIG = {
+    'CONSUMER_KEY': config('TWITTER_CONSUMER_KEY'),
+    'CONSUMER_SECRET': config('TWITTER_CONSUMER_SECRET'),
+    'ACCESS_TOKEN': config('TWITTER_ACCESS_TOKEN'),
+    'ACCESS_TOKEN_SECRET': config('TWITTER_ACCESS_TOKEN_SECRET'),
+}

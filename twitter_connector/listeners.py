@@ -1,10 +1,10 @@
-from django.core.exceptions import ObjectDoesNotExist
-from django.db import IntegrityError
+
 import tweepy
 import json
 import logging
 
 from datetime import datetime
+from django.core.exceptions import ObjectDoesNotExist
 from twitter_connector.models import Tweet, Url, Hashtag, HashtagUrl, TweetUrl
 from twitter_connector.utils import get_expanded_url
 
