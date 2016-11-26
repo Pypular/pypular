@@ -51,5 +51,5 @@ cp contrib/env-sample .env
 ## Running
 
 ```
-python manage.py twitter
+honcho run python -m twitter_connector
 ```

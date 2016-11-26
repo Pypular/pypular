@@ -66,5 +66,5 @@ target/
 
 # Config file
 *.yaml
-
 *.json
+.env
