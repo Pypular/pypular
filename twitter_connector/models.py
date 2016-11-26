@@ -2,6 +2,28 @@ from datetime import datetime
 from django.db import models
 
 
+class Url(models.Model):
+
+    url = models.TextField('url', unique=True, null=False)
+    expanded_url = models.TextField('expanded_url')
+    created_at = models.DateTimeField('created_at', default=datetime.utcnow)
+    modified_at = models.DateTimeField('modified_at', default=datetime.utcnow)
+    # tweet = relationship('Tweet', secondary=tweets_urls, back_populates='urls')
+    # hashtag = relationship('Hashtag', secondary=hashtags_urls, back_populates='urls')
+
+    class Meta:
+        db_table = 'url'
+        verbose_name = 'url'
+        verbose_name_plural = 'urls'
+        unique_together = (('id', 'url'),)
+
+    def __str__(self):
+        return self.url
+
+    def __repr__(self):
+        return "<Url(url='%s')>" % self.url
+
+
 class Tweet(models.Model):
 
     id = models.BigIntegerField(primary_key=True, unique=True)
@@ -10,7 +32,7 @@ class Tweet(models.Model):
     text = models.CharField('text', max_length=150)
     retweet_count = models.IntegerField('retweet_count')
     favorite_count = models.IntegerField('favorite_count')
-    # urls = models.ManyToManyField('Url', verbose_name='urls', blank=False)
+    urls = models.ManyToManyField('Url', verbose_name='urls', through='TweetUrl')
 
     class Meta:
         db_table = 'tweet'
@@ -26,42 +48,19 @@ class Tweet(models.Model):
 
 class Hashtag(models.Model):
 
-    id = models.BigIntegerField(primary_key=True, unique=True)
     hashtag = models.CharField('hashtag', max_length=100, unique=True)
-    # urls = models.ManyToManyField('Url', verbose_name='urls', blank=False)
+    urls = models.ManyToManyField('Url', verbose_name='urls', through='HashtagUrl')
 
     class Meta:
         db_table = 'hashtag'
         verbose_name = 'hashtag'
         verbose_name_plural = 'hashtags'
-        unique_together = (('id', 'hashtag'),)
 
     def __str__(self):
         return self.hashtag
 
     def __repr__(self):
         return "<Hashtag(hashtag='%s')>" % self.hashtag
-
-
-class Url(models.Model):
-
-    id = models.BigIntegerField(primary_key=True, unique=True)
-    url = models.TextField('url', unique=True, null=False)
-    expanded_url = models.TextField('expanded_url')
-    created_at = models.DateTimeField('created_at', default=datetime.utcnow)
-    modified_at = models.DateTimeField('modified_at', default=datetime.utcnow)
-
-    class Meta:
-        db_table = 'url'
-        verbose_name = 'url'
-        verbose_name_plural = 'urls'
-        unique_together = (('id', 'expanded_url'),)
-
-    def __str__(self):
-        return self.url
-
-    def __repr__(self):
-        return "<Url(url='%s')>" % self.url
 
 
 class HashtagUrl(models.Model):

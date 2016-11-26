@@ -1,9 +1,11 @@
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 import tweepy
 import json
 import logging
-import twitter_connector.models as db
 
 from datetime import datetime
+from twitter_connector.models import Tweet, Url, Hashtag, HashtagUrl, TweetUrl
 from twitter_connector.utils import get_expanded_url
 
 logger = logging.getLogger(__name__)
@@ -41,16 +43,10 @@ class FileListener(tweepy.StreamListener):
 
 class DBListener(tweepy.StreamListener):
 
-    def __init__(self, db_name):
+    def __init__(self):
         super().__init__()
         self.filter = ['created_at', 'entities', 'favorite_count', 'id',
                        'retweet_count', 'text', 'timestamp_ms']
-        # self.db_name = db_name
-        # self.session = db.setup_db()
-
-    # def __exit__(self):
-    #     self.session.close()
-    #     logger.info('Closing connection with DB %s' % self.db_name)
 
     def parse_tweet(self, tweet, *args):
         data = {}
@@ -68,68 +64,81 @@ class DBListener(tweepy.StreamListener):
                     exit(1)
         return data
 
-    def get_tweets(self, data, urls):
-        tweet = self.session.query(db.Tweet).filter_by(id=data['id']).first()
-        if tweet:
+    def save_tweet(self, data, urls):
+        try:
+            tweet = Tweet.objects.get(pk=data['id'])
             _urls = [url.expanded_url for url in tweet.urls]
             for url in urls:
                 if url.expanded_url not in _urls:
                     tweet.urls.append(url)
-        else:
-            tweet = db.Tweet(
-                id=data['id'], created_at=data['created_at'], timestamp_ms=data['timestamp_ms'],
-                text=data['text'], urls=urls, retweet_count=data['retweet_count'],
+        except ObjectDoesNotExist:
+            created_at = datetime.strptime(data['created_at'], '%a %b %d %H:%M:%S %z %Y')
+            tweet = Tweet(
+                id=data['id'], created_at=created_at, text=data['text'],
+                timestamp_ms=data['timestamp_ms'], retweet_count=data['retweet_count'],
                 favorite_count=data['favorite_count']
             )
+            tweet.save()
+            for url in urls:
+                tweet_url = TweetUrl()
+                tweet_url.tweet = tweet
+                tweet_url.url = url
+                tweet_url.save()
+                tweet.tweeturl_set.add(tweet_url)
+
         return tweet
 
     def get_urls(self, urls):
         expanded_urls = []
         urls_lst = []
         for url in urls:
-            exp_url = get_expanded_url(url['expanded_url'])
-            if exp_url not in urls_lst:
-                urls_lst.append(exp_url)
-                expanded_url = self.session.query(db.Url).filter_by(
-                    expanded_url=exp_url).first()
-                if expanded_url:
-                    expanded_url.modified_at = datetime.utcnow()
-                    expanded_urls.append(expanded_url)
-                else:
-                    _url = self.session.query(db.Url).filter_by(
-                        url=url['expanded_url']).first()
-                    if not _url:
-                        new_url = db.Url(url['expanded_url'])
-                        new_url.expanded_url = exp_url
-                        expanded_urls.append(new_url)
+            if url['url']:
+                exp_url = get_expanded_url(url['expanded_url'])
+                if exp_url not in urls_lst:
+                    urls_lst.append(exp_url)
+                    expanded_url = Url.objects.filter(expanded_url=exp_url).first()
+                    if expanded_url:
+                        expanded_url.modified_at = datetime.utcnow()
+                        expanded_urls.append(expanded_url)
                     else:
-                        logger.warn('Found matching url but different '
-                                    'expanded_url. Skipping...')
+                        _url = Url.objects.filter(expanded_url=url['expanded_url']).first()
+                        if not _url:
+                            new_url = Url()
+                            new_url.url = url['url']
+                            new_url.expanded_url = exp_url
+                            expanded_urls.append(new_url)
+                        else:
+                            logger.warn('Found matching url but different '
+                                        'expanded_url. Skipping...')
         return expanded_urls
 
-    def get_hashtags(self, entities):
+    def save_hashtags(self, hashtags1):
         hashtags = []
         _hashtags = []
-        for hashtag in entities['hashtags']:
+        for hashtag in hashtags1:
             _tag = hashtag['text'].lower()
             if _tag not in _hashtags:
                 _hashtags.append(_tag)
-                tag = self.session.query(db.Hashtag).filter_by(hashtag=_tag).first()
+                tag = Hashtag.objects.filter(hashtag=_tag).first()
                 if tag:
-                    # tag.urls.append(urls)
                     hashtags.append(tag)
                 else:
-                    new_tag = db.Hashtag(_tag)
-                    # new_tag.urls = urls
+                    new_tag = Hashtag()
+                    new_tag.hashtag = _tag
+                    new_tag.save()
                     hashtags.append(new_tag)
         return hashtags
 
-    def add_hashtags(self, hashtags, urls):
+    def save_urls(self, hashtags, urls):
         for url in urls:
-            tags = url.hashtags
+            url.save()
             for hashtag in hashtags:
-                if hashtag not in tags:
-                    url.hashtags.append(hashtag)
+                if not url.hashtagurl_set.all().filter(hashtag=hashtag):
+                    hashtag_url = HashtagUrl()
+                    hashtag_url.hashtag = hashtag
+                    hashtag_url.url = url
+                    hashtag_url.save()
+                    url.hashtagurl_set.add(hashtag_url)
         return urls
 
     def on_data(self, raw_data):
@@ -143,14 +152,10 @@ class DBListener(tweepy.StreamListener):
         urls = self.get_urls(entities['urls'])
         if urls:
             print('************ URLS **********: ', urls)
-            hashtags = self.get_hashtags(entities)
-            urls = self.add_hashtags(hashtags, urls)
-            tweet = self.get_tweets(data, urls)
-            logger.info('Saving Tweet: %s' % tweet.text)
-            self.session.add(tweet)
-            self.session.add_all(hashtags)
-            self.session.add_all(urls)
-            self.session.commit()
+            hashtags = self.save_hashtags(entities['hashtags'])
+            urls = self.save_urls(hashtags, urls)
+            tweet = self.save_tweet(data, urls)
+            logger.info('Tweet Saved: %s' % tweet.text)
         return True
 
     def on_error(self, status):
