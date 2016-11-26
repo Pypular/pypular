@@ -12,6 +12,7 @@
 3. Active virtualenv.
 4. Install dependencies.
 5. Copy the configuration file.
+6. Run Migrations
   
 > git clone git@github.com:denisra/pypular.git pypular  
 > cd pypular  
@@ -19,6 +20,7 @@
 > source .virtualenv/bin/activate  
 > pip install -r requirements.txt  
 > cp contrib/env-sample .env  
+> python manage.py migrate
 
 ======
 
@@ -43,11 +45,11 @@ Access Twitter App Management and [create a new app](https://apps.twitter.com/ap
 Copy and change with your own credentials
 
 ```
-cp api/conf/api.yaml.template api/conf/api.yaml
+cp contrib/env-sample .env
 ```
 
 ## Running
 
 ```
-python -m twitter_connector
+python manage.py twitter
 ```
