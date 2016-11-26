@@ -5,14 +5,13 @@ fields for each tweet.
 """
 
 import logging
-import json
-from pprint import pprint
 
 
-from api.twitter_connector import DBListener
+from twitter_connector.__main__ import DBListener
 
 logger = logging.getLogger(__name__)
 # Base = declarative_base()
+
 
 def setup_logging():
     logging.basicConfig(level=logging.INFO)
@@ -29,7 +28,8 @@ def read_tweet(file_name):
             tweet = file.readline()
             if tweet.strip():
                 yield tweet
-                #yield json.loads(tweet)
+                # yield json.loads(tweet)
+
 
 def parse_tweet(tweet, *args):
     data = {}
@@ -86,9 +86,9 @@ def main():
     #         print(new_tweet.created_at, new_tweet.url)
     #         session.add(new_tweet)
     # session.commit()
-            #t = session.query(Tweet).first()
-        #break
-        #for url in urls:
+            # t = session.query(Tweet).first()
+        # break
+        # for url in urls:
         #    pprint(url['expanded_url'])
 
 
