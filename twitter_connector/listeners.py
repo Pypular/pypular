@@ -1,10 +1,12 @@
-
-import tweepy
+from datetime import datetime
 import json
 import logging
 
-from datetime import datetime
+from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
+
+import tweepy
+
 from twitter_connector.models import Tweet, Url, Hashtag, HashtagUrl, TweetUrl
 from twitter_connector.utils import get_expanded_url
 
@@ -56,7 +58,7 @@ class DBListener(tweepy.StreamListener):
             except KeyError:
                 logger.error('No %s found on tweet' % arg)
                 if arg == 'created_at':
-                    data[arg] = datetime.utcnow()
+                    data[arg] = timezone.now()
                     logger.info('Using current datetime %s.' % data[arg])
                 else:
                     logger.error('Exiting so we can catch and fix the error',
@@ -98,7 +100,7 @@ class DBListener(tweepy.StreamListener):
                     urls_lst.append(exp_url)
                     expanded_url = Url.objects.filter(expanded_url=exp_url).first()
                     if expanded_url:
-                        expanded_url.modified_at = datetime.utcnow()
+                        expanded_url.modified_at = timezone.now()
                         expanded_urls.append(expanded_url)
                     else:
                         _url = Url.objects.filter(expanded_url=url['expanded_url']).first()
