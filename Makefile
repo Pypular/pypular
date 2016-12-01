@@ -1,3 +1,6 @@
+DOCKER_COMPOSE=docker-compose
+DOCKER_COMPOSE_TEST=docker-compose -f docker-compose_testing.yml
+
 .PHONY: clean-pyc clean
 
 help:
@@ -14,3 +17,8 @@ clean-pyc:
 
 lint:
 	flake8 .
+
+run_app:
+	$(DOCKER_COMPOSE) build app
+	$(DOCKER_COMPOSE) up app
+

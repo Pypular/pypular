@@ -1,0 +1,8 @@
+TWITTER_CONSUMER_KEY=<your consumer key>
+TWITTER_CONSUMER_SECRET=<your consumer secret>
+TWITTER_ACCESS_TOKEN=<your access token>
+TWITTER_ACCESS_TOKEN_SECRET=<your access token secret>
+DATABASE=postgresql://user:pass@localhost:5432/database
+DEBUG=True
+SECRET_KEY=SECRET
+ALLOWED_HOSTS=127.0.0.1, .localhost

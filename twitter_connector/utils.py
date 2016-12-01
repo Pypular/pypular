@@ -5,15 +5,6 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-def setup_logging():
-    logging.basicConfig(level=logging.INFO)
-    handler = logging.FileHandler('twitter_connector.log')
-    handler.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-
 def get_expanded_url(url, max_retries=3):
     # todo: add error handling
     for retry in range(max_retries):

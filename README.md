@@ -1,5 +1,29 @@
 # Pypular
 
+## Summary
+
+- [How to Development](#how-to-development)
+- [Setting up Database](#setting-up-database)
+
+## How to Development?
+
+1. clone repository.
+2. create a virtualenv.
+3. Active virtualenv.
+4. Install dependencies.
+5. Copy the configuration file.
+6. Run Migrations
+  
+> git clone git@github.com:denisra/pypular.git pypular  
+> cd pypular  
+> python3 -m venv .virtualenv  
+> source .virtualenv/bin/activate  
+> pip install -r requirements.txt  
+> cp contrib/env-sample .env  
+> python manage.py migrate
+
+======
+
 ## Installation
 
 ### Install postgresql
@@ -8,19 +32,6 @@
 # install the binary
 brew install postgresql
 createdb pypular
-```
-
-### Create virtualenv
-
-```
-python3 -m venv venv_pypular
-source venv_pypular/bin/activate
-```
-***Warning - django is not integrated yet***
-
-### Installing dependencies
-```
-pip install -r requirements.txt
 ```
 
 ## Configuration
@@ -34,11 +45,11 @@ Access Twitter App Management and [create a new app](https://apps.twitter.com/ap
 Copy and change with your own credentials
 
 ```
-cp env.template .env
+cp contrib/env-sample .env
 ```
 
 ## Running
 
 ```
-honcho run python -m twitter_connector
+honcho run python manage.py twitter
 ```

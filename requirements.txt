@@ -14,3 +14,7 @@ simple-settings==0.10.0
 SQLAlchemy==1.0.13
 tweepy==3.5.0
 honcho==0.7.1
+python-decouple==3.0
+dj-database-url==0.3.0
+pytest-django==3.1.2
+flake8==3.2.1
