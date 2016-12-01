@@ -13,36 +13,6 @@ from twitter_connector.utils import get_expanded_url
 logger = logging.getLogger(__name__)
 
 
-class StdOutListener(tweepy.StreamListener):
-
-    def on_data(self, data):
-        print(data)
-        return True
-
-    def on_error(self, status):
-        print(status)
-
-
-class FileListener(tweepy.StreamListener):
-
-    def __init__(self, file_name):
-        super().__init__()
-        self.file_name = file_name
-        logger.info('Opening file %s' % self.file_name)
-        self.file = open(self.file_name, 'w')
-
-    def __exit__(self):
-        self.file.close()
-        logger.info('Closing file %s' % self.file_name)
-
-    def on_data(self, data):
-        self.file.write(data)
-        return True
-
-    def on_error(self, status):
-        logger.error(status, exec_info=True)
-
-
 class DBListener(tweepy.StreamListener):
 
     def __init__(self):
