@@ -4,8 +4,8 @@ from django.db import models
 
 class Url(models.Model):
 
-    url = models.TextField('url', unique=True, null=False)
-    expanded_url = models.TextField('expanded_url')
+    url = models.TextField('url', null=False)
+    expanded_url = models.TextField('expanded_url', unique=True)
     created_at = models.DateTimeField('created_at', default=timezone.now)
     modified_at = models.DateTimeField('modified_at', default=timezone.now)
     # tweet = relationship('Tweet', secondary=tweets_urls, back_populates='urls')
