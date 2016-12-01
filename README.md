@@ -14,14 +14,15 @@
 5. Copy the configuration file.
 6. Run Migrations
   
-> git clone git@github.com:denisra/pypular.git pypular  
-> cd pypular  
-> python3 -m venv .virtualenv  
-> source .virtualenv/bin/activate  
-> pip install -r requirements.txt  
-> cp contrib/env-sample .env  
-> python manage.py migrate
-
+```
+git clone git@github.com:denisra/pypular.git pypular  
+cd pypular  
+python3 -m venv .virtualenv  
+source .virtualenv/bin/activate  
+pip install -r requirements.txt  
+cp contrib/env-sample .env  
+python manage.py migrate
+```
 ======
 
 ## Installation
