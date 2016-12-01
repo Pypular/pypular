@@ -18,11 +18,6 @@ clean-pyc:
 lint:
 	flake8 .
 
-run_test:
-	$(DOCKER_COMPOSE_TEST) rm -f test_redis test_postgres
-	$(DOCKER_COMPOSE_TEST) build
-	$(DOCKER_COMPOSE_TEST) run --rm -e DJANGO_SETTINGS_MODULE=code_challenge.settings test python manage.py test --nomigrations
-
 run_app:
 	$(DOCKER_COMPOSE) build app
 	$(DOCKER_COMPOSE) up app
