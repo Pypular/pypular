@@ -1,15 +1,15 @@
 import tweepy
 
-from pypular.settings import TWITTER_CONFIG
+from django.conf import settings
 from twitter_connector.listeners import DBListener
 
 
 def twitter_stream(logger):
     auth = tweepy.OAuthHandler(
-        TWITTER_CONFIG['CONSUMER_KEY'], TWITTER_CONFIG['CONSUMER_SECRET']
+        settings.TWITTER_CONFIG['CONSUMER_KEY'], settings.TWITTER_CONFIG['CONSUMER_SECRET']
     )
     auth.set_access_token(
-        TWITTER_CONFIG['ACCESS_TOKEN'], TWITTER_CONFIG['ACCESS_TOKEN_SECRET']
+        settings.TWITTER_CONFIG['ACCESS_TOKEN'], settings.TWITTER_CONFIG['ACCESS_TOKEN_SECRET']
     )
     listener = DBListener()
     stream = tweepy.Stream(auth, listener, retry_count=50)

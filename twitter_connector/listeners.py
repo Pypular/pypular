@@ -112,10 +112,10 @@ class DBListener(tweepy.StreamListener):
                                         'expanded_url. Skipping...')
         return expanded_urls
 
-    def save_hashtags(self, hashtags1):
+    def save_hashtags(self, hashtags):
         hashtags = []
         _hashtags = []
-        for hashtag in hashtags1:
+        for hashtag in hashtags:
             _tag = hashtag['text'].lower()
             if _tag not in _hashtags:
                 _hashtags.append(_tag)
