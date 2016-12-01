@@ -1,5 +1,5 @@
 from datetime import datetime
-from django.db import models
+from django.db import models, transaction
 
 
 class Url(models.Model):
@@ -8,8 +8,6 @@ class Url(models.Model):
     expanded_url = models.TextField('expanded_url')
     created_at = models.DateTimeField('created_at', default=datetime.utcnow)
     modified_at = models.DateTimeField('modified_at', default=datetime.utcnow)
-    # tweet = relationship('Tweet', secondary=tweets_urls, back_populates='urls')
-    # hashtag = relationship('Hashtag', secondary=hashtags_urls, back_populates='urls')
 
     class Meta:
         db_table = 'url'
@@ -44,6 +42,39 @@ class Tweet(models.Model):
 
     def __repr__(self):
         return "<Tweet(text='%s')>" % self.text
+
+    def save(self, *args, **kwargs):
+        if not args:
+            self.save()
+        else:
+            super().save()
+            try:
+                urls, hashtags = kwargs['urls'], kwargs['hashtags']
+                 # for url in urls:
+                #     tweet_url = TweetUrl()
+                #     tweet_url.tweet = tweet
+                #     tweet_url.url = url
+                #     tweet_url.save()
+                #     tweet.tweeturl_set.add(tweet_url)
+                # def save_urls(self, hashtags, urls):
+                #     for url in urls:
+                #         url.save()
+                #         for hashtag in hashtags:
+                #             if not url.hashtagurl_set.all().filter(hashtag=hashtag):
+                #                 hashtag_url = HashtagUrl()
+                #                 hashtag_url.hashtag = hashtag
+                #                 hashtag_url.url = url
+                #                 hashtag_url.save()
+                #                 url.hashtagurl_set.add(hashtag_url)
+                #     return urls
+            except:
+                transaction.rollback()
+
+        print("salva")
+        # save url
+        # save hashtag
+        # save tweet
+        pass
 
 
 class Hashtag(models.Model):
