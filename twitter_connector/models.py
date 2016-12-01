@@ -1,13 +1,13 @@
-from datetime import datetime
+from django.utils import timezone
 from django.db import models, transaction
 
 
 class Url(models.Model):
 
-    url = models.TextField('url', unique=True, null=False)
-    expanded_url = models.TextField('expanded_url')
-    created_at = models.DateTimeField('created_at', default=datetime.utcnow)
-    modified_at = models.DateTimeField('modified_at', default=datetime.utcnow)
+    url = models.TextField('url', null=False)
+    expanded_url = models.TextField('expanded_url', unique=True)
+    created_at = models.DateTimeField('created_at', default=timezone.now)
+    modified_at = models.DateTimeField('modified_at', default=timezone.now)
 
     class Meta:
         verbose_name = 'url'
