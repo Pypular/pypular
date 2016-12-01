@@ -12,7 +12,6 @@ class Url(models.Model):
     # hashtag = relationship('Hashtag', secondary=hashtags_urls, back_populates='urls')
 
     class Meta:
-        db_table = 'url'
         verbose_name = 'url'
         verbose_name_plural = 'urls'
         unique_together = (('id', 'url'),)
@@ -35,7 +34,6 @@ class Tweet(models.Model):
     urls = models.ManyToManyField('Url', verbose_name='urls', through='TweetUrl')
 
     class Meta:
-        db_table = 'tweet'
         verbose_name = 'tweet'
         verbose_name_plural = 'tweets'
 
@@ -52,7 +50,6 @@ class Hashtag(models.Model):
     urls = models.ManyToManyField('Url', verbose_name='urls', through='HashtagUrl')
 
     class Meta:
-        db_table = 'hashtag'
         verbose_name = 'hashtag'
         verbose_name_plural = 'hashtags'
 
@@ -69,7 +66,6 @@ class HashtagUrl(models.Model):
     hashtag = models.ForeignKey('Hashtag')
 
     class Meta:
-        db_table = 'hashtag_url'
         verbose_name = 'hashtagurl'
         verbose_name_plural = 'hashtagurls'
         unique_together = (('url', 'hashtag'),)
@@ -81,7 +77,6 @@ class TweetUrl(models.Model):
     url = models.ForeignKey('Url')
 
     class Meta:
-        db_table = 'tweet_url'
         verbose_name = 'tweeturl'
         verbose_name_plural = 'tweeturls'
         unique_together = (('tweet', 'url'),)
