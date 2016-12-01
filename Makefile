@@ -6,6 +6,7 @@ DOCKER_COMPOSE_TEST=docker-compose -f docker-compose_testing.yml
 help:
 	@echo "clean - remove Python file artifacts"
 	@echo "lint - check style with flake8"
+	@echo "run_app - run app using docker"
 
 clean: clean-pyc
 
