@@ -1,7 +1,5 @@
-
 import json
 import logging
-import traceback
 from datetime import datetime
 
 from django.utils import timezone
