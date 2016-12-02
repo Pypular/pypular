@@ -12,13 +12,13 @@ class Url(models.Model):
     class Meta:
         verbose_name = 'url'
         verbose_name_plural = 'urls'
-        unique_together = (('id', 'url'),)
+        unique_together = (('id', 'expanded_url'),)
 
     def __str__(self):
-        return self.url
+        return self.expanded_url
 
     def __repr__(self):
-        return "<Url(url='%s')>" % self.url
+        return "<Url(url='%s')>" % self.expanded_url
 
 
 class Tweet(models.Model):
@@ -41,38 +41,23 @@ class Tweet(models.Model):
     def __repr__(self):
         return "<Tweet(text='%s')>" % self.text
 
-    def save(self, *args, **kwargs):
-        if not args:
-            self.save()
-        else:
-            super().save()
-            try:
-                urls, hashtags = kwargs['urls'], kwargs['hashtags']
-                 # for url in urls:
-                #     tweet_url = TweetUrl()
-                #     tweet_url.tweet = tweet
-                #     tweet_url.url = url
-                #     tweet_url.save()
-                #     tweet.tweeturl_set.add(tweet_url)
-                # def save_urls(self, hashtags, urls):
-                #     for url in urls:
-                #         url.save()
-                #         for hashtag in hashtags:
-                #             if not url.hashtagurl_set.all().filter(hashtag=hashtag):
-                #                 hashtag_url = HashtagUrl()
-                #                 hashtag_url.hashtag = hashtag
-                #                 hashtag_url.url = url
-                #                 hashtag_url.save()
-                #                 url.hashtagurl_set.add(hashtag_url)
-                #     return urls
-            except:
-                transaction.rollback()
-
-        print("salva")
-        # save url
-        # save hashtag
-        # save tweet
-        pass
+    @transaction.atomic
+    def save_tweet(self, *args, **kwargs):
+        self.save()
+        urls, hashtags = kwargs['urls'], kwargs['hashtags']
+        for url in urls:
+            url.save()
+            tweet_url = TweetUrl()
+            tweet_url.tweet = self
+            tweet_url.url = url
+            tweet_url.save()
+            for hashtag in hashtags:
+                hashtag.save()
+                if not url.hashtagurl_set.all().filter(hashtag=hashtag):
+                    hashtag_url = HashtagUrl()
+                    hashtag_url.hashtag = hashtag
+                    hashtag_url.url = url
+                    hashtag_url.save()
 
 
 class Hashtag(models.Model):

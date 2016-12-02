@@ -1,12 +1,14 @@
-from datetime import datetime
+
 import json
 import logging
+import traceback
+from datetime import datetime
 
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
-from twitter_connector.models import Tweet, Url, Hashtag
 import tweepy
 
+from twitter_connector.models import Tweet, Url, Hashtag
 from twitter_connector.utils import get_expanded_url
 
 logger = logging.getLogger(__name__)
@@ -49,7 +51,7 @@ class DBListener(tweepy.StreamListener):
                 timestamp_ms=data['timestamp_ms'], retweet_count=data['retweet_count'],
                 favorite_count=data['favorite_count']
             )
-            tweet.save(urls=urls, hashtags=hashtags)
+            tweet.save_tweet(urls=urls, hashtags=hashtags)
 
         return tweet
 
@@ -104,8 +106,12 @@ class DBListener(tweepy.StreamListener):
             hashtags = self.prepare_hashtags(
                 [hashtag['text'].lower() for hashtag in entities['hashtags']]
             )
-            tweet = self.save_tweet(data, urls, hashtags)
-            logger.info('Tweet Saved: %s' % tweet.text)
+            try:
+                tweet = self.save_tweet(data, urls, hashtags)
+                logger.info('Tweet Saved: %s' % tweet.text)
+            except:
+                logger.error('Error on save tweet: ', exc_info=True)
+
         return True
 
     def on_error(self, status):
