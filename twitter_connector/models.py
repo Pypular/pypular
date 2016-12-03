@@ -86,6 +86,9 @@ class HashtagUrl(models.Model):
         verbose_name_plural = 'hashtagurls'
         unique_together = (('url', 'hashtag'),)
 
+    def __str__(self):
+        return '{0}'.format(str(self.hashtag))
+
 
 class TweetUrl(models.Model):
 
@@ -96,3 +99,6 @@ class TweetUrl(models.Model):
         verbose_name = 'tweeturl'
         verbose_name_plural = 'tweeturls'
         unique_together = (('tweet', 'url'),)
+
+    def __str__(self):
+        return '{0}'.format(str(self.url))
