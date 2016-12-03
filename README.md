@@ -91,3 +91,15 @@ cp contrib/env-sample .env
 ```
 honcho run python manage.py twitter
 ```
+
+## Checking data
+
+### Create SuperUser
+```
+python manage.py createsuperuser
+```
+
+### Accessing Django Admin
+```
+python manage.py runserver
+```
