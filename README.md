@@ -2,8 +2,54 @@
 
 ## Summary
 
-- [How to Development](#how-to-development)
+
 - [Setting up Database](#setting-up-database)
+- [How to Development](#how-to-development)
+
+## Setting up Database
+
+### Install postgresql
+
+1. MacOS
+
+```
+# install the binary
+brew install postgresql
+```
+
+2. Ubuntu
+
+```
+sudo apt-get update
+sudo apt-get install postgresql postgresql-contrib
+```
+
+### Create DB
+
+Command to create database on postgres:
+
+Open your terminal:
+
+<b>Fisrt option<b>:
+
+```
+createdb pypular
+```
+
+<b>Second option<b>
+
+1. Change for postgres account:
+
+    > sudo su - postgres
+2. Run command line to start client postgres.
+
+    > psql
+3. Create user and password.
+
+    > CREATE USER 'username' WITH PASSWORD 'somepassword';
+4. Create a database instance.
+
+    > CREATE DATABASE 'database-name' WITH OWNER 'username' ENCODING 'utf-8';
 
 ## How to Development?
 
@@ -25,15 +71,6 @@ python manage.py migrate
 ```
 ======
 
-## Installation
-
-### Install postgresql
-
-```
-# install the binary
-brew install postgresql
-createdb pypular
-```
 
 ## Configuration
 
