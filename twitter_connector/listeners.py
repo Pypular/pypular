@@ -42,7 +42,9 @@ class DBListener(tweepy.StreamListener):
                 if url.expanded_url not in _urls:
                     tweet.urls.append(url)
         except ObjectDoesNotExist:
-            created_at = datetime.strptime(data['created_at'], '%a %b %d %H:%M:%S %z %Y')
+            created_at = timezone.datetime.strptime(
+                data['created_at'], '%a %b %d %H:%M:%S %z %Y'
+            )
             tweet = Tweet(
                 id=data['id'], created_at=created_at, text=data['text'],
                 timestamp_ms=data['timestamp_ms'], retweet_count=data['retweet_count'],
