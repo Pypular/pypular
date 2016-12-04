@@ -1,6 +1,5 @@
 import json
 import logging
-from datetime import datetime
 
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
@@ -43,7 +42,9 @@ class DBListener(tweepy.StreamListener):
                 if url.expanded_url not in _urls:
                     tweet.urls.append(url)
         except ObjectDoesNotExist:
-            created_at = datetime.strptime(data['created_at'], '%a %b %d %H:%M:%S %z %Y')
+            created_at = timezone.datetime.strptime(
+                data['created_at'], '%a %b %d %H:%M:%S %z %Y'
+            )
             tweet = Tweet(
                 id=data['id'], created_at=created_at, text=data['text'],
                 timestamp_ms=data['timestamp_ms'], retweet_count=data['retweet_count'],
@@ -61,7 +62,7 @@ class DBListener(tweepy.StreamListener):
                 if exp_url not in urls_to_save.keys():
                     try:
                         new_url = Url.objects.get(expanded_url=exp_url)
-                        new_url.modified_at = datetime.utcnow()
+                        new_url.modified_at = timezone.now()
                         urls_to_save[exp_url] = new_url
                     except ObjectDoesNotExist:
                         try:
@@ -100,7 +101,7 @@ class DBListener(tweepy.StreamListener):
         entities = data['entities']
         urls = self.prepare_urls(entities['urls'])
         if urls:
-            print('************ URLS **********: ', urls)
+            logger.info('************ URLS **********: {0}'.format(urls))
             hashtags = self.prepare_hashtags(
                 [hashtag['text'].lower() for hashtag in entities['hashtags']]
             )
