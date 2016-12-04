@@ -1,0 +1,14 @@
+doc-warnings: true
+test-warnings: false
+strictness: veryhigh
+max-line-length: 99
+uses:
+  - django
+autodetect: true
+requirements:
+  - requirements.txt
+ignore-paths:
+  - contrib
+  - ops
+python-targets:
+  - 3
