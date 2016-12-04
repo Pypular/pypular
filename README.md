@@ -1,6 +1,8 @@
 # Pypular
 
 [![Build Status](https://travis-ci.org/Pypular/pypular.svg?branch=master)](https://travis-ci.org/Pypular/pypular)
+[![Code Health](https://landscape.io/github/Pypular/pypular/master/landscape.svg?style=flat)](https://landscape.io/github/Pypular/pypular/master)
+
 
 ## Summary
 
