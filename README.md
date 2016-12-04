@@ -1,5 +1,7 @@
 # Pypular
 
+[![Build Status](https://travis-ci.org/Pypular/pypular.svg?branch=master)](https://travis-ci.org/Pypular/pypular)
+
 ## Summary
 
 
