@@ -1,5 +1,5 @@
 import django
-django.setup()
+django.setup()  # noqa
 from django.core.management.base import BaseCommand
 
 import os
@@ -22,10 +22,3 @@ class Command(BaseCommand):
             twitter_stream(logger)
         except KeyboardInterrupt:
             logger.info('Exiting...')
-
-if __name__ == '__main__':
-    setup_logging('twitter_connector.log')
-    try:
-        twitter_stream(logger)
-    except KeyboardInterrupt:
-        logger.info('Exiting...')
