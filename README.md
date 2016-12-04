@@ -40,16 +40,27 @@ createdb pypular
 
 1. Change for postgres account:
 
-    ```sudo su - postgres```
+    ```
+    sudo su - postgres
+    ```
+    
 2. Run command line to start client postgres.
 
-   ```psql```
+   ```
+   psql
+   ```
+   
 3. Create user and password.
 
-   ```CREATE USER 'username' WITH PASSWORD 'somepassword';```
+   ```
+   CREATE USER 'username' WITH PASSWORD 'somepassword';
+   ```
+   
 4. Create a database instance.
 
-   ```CREATE DATABASE 'database-name' WITH OWNER 'username' ENCODING 'utf-8';```
+   ```
+   CREATE DATABASE 'database-name' WITH OWNER 'username' ENCODING 'utf-8';
+   ```
 
 ## How to Development?
 
