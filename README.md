@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/Pypular/pypular.svg?branch=master)](https://travis-ci.org/Pypular/pypular)
 [![Code Health](https://landscape.io/github/Pypular/pypular/master/landscape.svg?style=flat)](https://landscape.io/github/Pypular/pypular/master)
+[![Coverage Status](https://coveralls.io/repos/github/Pypular/pypular/badge.svg?branch=master)](https://coveralls.io/github/Pypular/pypular?branch=master)
 
 
 ## Summary
