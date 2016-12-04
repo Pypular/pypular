@@ -11,8 +11,12 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+import sys
+
 from decouple import config, Csv
 from dj_database_url import parse as dburl
+import raven
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -26,6 +30,7 @@ SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default=[], cast=Csv())
 
@@ -127,3 +132,14 @@ TWITTER_CONFIG = {
     'ACCESS_TOKEN': config('TWITTER_ACCESS_TOKEN'),
     'ACCESS_TOKEN_SECRET': config('TWITTER_ACCESS_TOKEN_SECRET'),
 }
+
+
+if not DEBUG and not TESTING:
+    INSTALLED_APPS += (
+        'raven.contrib.django.raven_compat',
+    )
+
+    RAVEN_CONFIG = {
+        'dsn': config('RAVEN_DSN', None),
+        'release': raven.fetch_git_sha(os.path.dirname(os.pardir)),
+    }
