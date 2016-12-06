@@ -29,18 +29,17 @@ class DBListener(tweepy.StreamListener):
                     data[arg] = timezone.now()
                     logger.info('Using current datetime %s.' % data[arg])
                 else:
-                    logger.error('Exiting so we can catch and fix the error',
-                                 exec_info=True)
+                    logger.error('Exiting so we can catch and fix the error')
                     exit(1)
         return data
 
     def save_tweet(self, data, urls, hashtags):
         try:
             tweet = Tweet.objects.get(pk=data['id'])
-            _urls = [url.expanded_url for url in tweet.urls]
+            _urls = [url.url.expanded_url for url in list(tweet.tweeturl_set.all())]
             for url in urls:
-                if url.expanded_url not in _urls:
-                    tweet.urls.append(url)
+                if url.expanded_url in _urls:
+                    urls.remove(url)
         except ObjectDoesNotExist:
             created_at = timezone.datetime.strptime(
                 data['created_at'], '%a %b %d %H:%M:%S %z %Y'
@@ -50,7 +49,8 @@ class DBListener(tweepy.StreamListener):
                 timestamp_ms=data['timestamp_ms'], retweet_count=data['retweet_count'],
                 favorite_count=data['favorite_count']
             )
-            tweet.save_tweet(urls=urls, hashtags=hashtags)
+
+        tweet.save_tweet(urls=urls, hashtags=hashtags)
 
         return tweet
 
@@ -75,7 +75,7 @@ class DBListener(tweepy.StreamListener):
                             new_url.expanded_url = exp_url
                             urls_to_save[exp_url] = new_url
 
-        return urls_to_save.values()
+        return list(urls_to_save.values())
 
     def prepare_hashtags(self, hashtags):
         hashtag_list = []
@@ -94,16 +94,19 @@ class DBListener(tweepy.StreamListener):
     def on_data(self, raw_data):
         try:
             json_tweet = json.loads(raw_data)
+            if 'entities' not in json_tweet:
+                return True
         except TypeError:
             logger.error('Error reading tweet:', exc_info=True)
             return True
         data = self.parse_tweet(json_tweet, *self.filter)
+
         entities = data['entities']
         urls = self.prepare_urls(entities['urls'])
         if urls:
             logger.info('************ URLS **********: {0}'.format(urls))
             hashtags = self.prepare_hashtags(
-                [hashtag['text'].lower() for hashtag in entities['hashtags']]
+                set([hashtag['text'].lower() for hashtag in entities['hashtags']])
             )
             try:
                 tweet = self.save_tweet(data, urls, hashtags)
