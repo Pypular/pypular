@@ -1,3 +1,6 @@
 [run]
-omit=*/migrations/*
+omit =
+    .venv/*
+    */migrations/*
+    */test/*
 source=.
