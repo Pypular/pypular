@@ -40,7 +40,8 @@ from twitter_connector.models import Url, Hashtag
     },
     # invalid no entities
     {
-        'filter': ['created_at', 'favorite_count', 'id', 'entities', 'retweet_count', 'text', 'timestamp_ms'],
+        'filter': ['created_at', 'favorite_count', 'id', 'entities', 'retweet_count',
+                   'text', 'timestamp_ms'],
         'tweet': {
             'favorite_count': 0, 'retweet_count': 0, 'text': 'text do tweet',
             'timestamp_ms': '1481054501648',
