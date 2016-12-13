@@ -38,6 +38,7 @@ class TweetUrlAdmin(admin.ModelAdmin):
 class HastagModelAdmin(admin.ModelAdmin):
     search_fields = ['hashtag']
 
+
 admin.site.register(Url, UrlModelAdmin)
 admin.site.register(Hashtag, HastagModelAdmin)
 admin.site.register(Tweet, TweetModelAdmin)

@@ -65,6 +65,4 @@ docs/_build/
 target/
 
 # Config file
-*.yaml
-*.json
 .env
