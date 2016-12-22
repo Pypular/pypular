@@ -47,17 +47,18 @@ class Tweet(models.Model):
         urls, hashtags = kwargs['urls'], kwargs['hashtags']
         for url in urls:
             url.save()
-            tweet_url = TweetUrl()
-            tweet_url.tweet = self
-            tweet_url.url = url
-            tweet_url.save()
-            for hashtag in hashtags:
-                hashtag.save()
-                if not url.hashtagurl_set.all().filter(hashtag=hashtag):
-                    hashtag_url = HashtagUrl()
-                    hashtag_url.hashtag = hashtag
-                    hashtag_url.url = url
-                    hashtag_url.save()
+            if not TweetUrl.objects.filter(tweet__id=self.id):
+                tweet_url = TweetUrl()
+                tweet_url.tweet = self
+                tweet_url.url = url
+                tweet_url.save()
+                for hashtag in hashtags:
+                    hashtag.save()
+                    if not url.hashtagurl_set.all().filter(hashtag=hashtag):
+                        hashtag_url = HashtagUrl()
+                        hashtag_url.hashtag = hashtag
+                        hashtag_url.url = url
+                        hashtag_url.save()
 
 
 class Hashtag(models.Model):
